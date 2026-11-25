@@ -1,0 +1,51 @@
+{
+  "seccion": "IEI-C1",
+  "modulo": 1,
+  "grupo": "Grupo-4",
+  "prototipo": "https://grupo-4-l97o.onrender.com",
+  "repositorio": "https://github.com/Vicente4raya/Grupo-4",
+  "taiga": "https://tree.taiga.io/project/jusepein-ti3043d-iei-n4-p2-c1",
+  "integrantes": [
+    {
+      "nombre": "Axel",
+      "github": "axel-gh",
+      "taiga": "axel-taiga",
+      "rol": "PO"
+    },
+    {
+      "nombre": "Mathias",
+      "github": "ArmandoPuertas777",
+      "taiga": "mathias-taiga",
+      "rol": "SM"
+    },
+    {
+      "nombre": "Vicente",
+      "github": "Vicente4raya",
+      "taiga": "vicente-taiga",
+      "rol": "Calidad"
+    },
+    {
+      "nombre": "Jusepe",
+      "github": "jusepe-gh",
+      "taiga": "jusepein",
+      "rol": "Desarrollador"
+    }
+  ],
+  "historias": [
+    {
+      "id": "HU-01",
+      "titulo": "Registro individual de mascotas",
+      "responsable": "Vicente4raya",
+      "verificacion": {
+        "metodo": "POST",
+        "ruta": "/api/registro/animales",
+        "perfil": "funcionario",
+        "cuerpo": {
+          "nombre": "Mascota Test",
+          "especie": "Perro"
+        },
+        "esperado": 201
+      }
+    }
+  ]
+}
