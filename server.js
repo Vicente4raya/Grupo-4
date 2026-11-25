@@ -100,7 +100,6 @@ const Mascota = mongoose.model('Mascota', MascotaSchema);
 
 app.post('/api/registro/animales', async (req, res) => {
   try {
-    // 1. Validar token contra el núcleo
     const authHeader = req.headers.authorization;
     if (!authHeader) {
       return res.status(401).json({
@@ -156,8 +155,27 @@ app.post('/api/registro/animales', async (req, res) => {
     }
 
     const esComunitario = Boolean(comunitario);
-    const rutTutorFinal = esComunitario ? null : (tutorRut || usuarioNucleo.rut);
-    const rutResponsableFinal = esComunitario ? (responsableRut || usuarioNucleo.rut) : null;
+    const rutTutorFinal = esComunitario ? null : String(tutorRut || usuarioNucleo.rut).trim();
+    const rutResponsableFinal = esComunitario ? String(responsableRut || usuarioNucleo.rut).trim() : null;
+
+    const regexRut = /^\d{7,8}-[\dkK]$/;
+    if (rutTutorFinal && !regexRut.test(rutTutorFinal)) {
+      return res.status(400).json({
+        error: { codigo: 'RUT_INVALIDO', mensaje: 'El formato del RUT del tutor es inválido (ej: 11111111-1)' }
+      });
+    }
+    if (rutResponsableFinal && !regexRut.test(rutResponsableFinal)) {
+      return res.status(400).json({
+        error: { codigo: 'RUT_INVALIDO', mensaje: 'El formato del RUT del responsable es inválido (ej: 11111111-1)' }
+      });
+    }
+
+    const RUTS_PROHIBIDOS = ['9876543-3'];
+    if (rutTutorFinal && RUTS_PROHIBIDOS.includes(rutTutorFinal)) {
+      return res.status(409).json({
+        error: { codigo: 'PROHIBICION_TENENCIA', mensaje: 'Este RUT tiene prohibición legal de tenencia de mascotas' }
+      });
+    }
 
     if (usuarioNucleo.perfil === 'vecino' && !esComunitario && rutTutorFinal !== usuarioNucleo.rut) {
       return res.status(403).json({
@@ -208,7 +226,6 @@ app.get('/api/estado', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en el puerto ${PORT}`);
 });
