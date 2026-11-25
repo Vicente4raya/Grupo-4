@@ -1,3 +1,4 @@
+
 {
   "seccion": "IEI-N4",
   "modulo": 1,
@@ -7,16 +8,28 @@
   "taiga": "https://tree.taiga.io/project/jusepein-ti3043d-iei-n4-p2-c1",
   "integrantes": [
     {
-      "nombre": "Vicente Araya",
-      "github": "Vicente4raya",
-      "taiga": "Vicente4raya",
-      "rol": "PO"
+      "nombre": "Mathias Arce",
+      "github": "ArmandoPuertas777",
+      "taiga": "mathias arce",
+      "rol": "SM"
     },
     {
       "nombre": "Axel Carrasco",
       "github": "AxelCarrasco",
       "taiga": "AxelCarrasco",
-      "rol": "SM"
+      "rol": "PO"
+    },
+    {
+      "nombre": "Vicente Araya",
+      "github": "Vicente4raya",
+      "taiga": "Vicente4raya",
+      "rol": "Analista"
+    },
+    {
+      "nombre": "Jusepe Inostroza",
+      "github": "jusepein",
+      "taiga": "jusepein",
+      "rol": "Arquitecto"
     }
   ],
   "historias": [
