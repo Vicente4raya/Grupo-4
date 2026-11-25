@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consulta de Animales Registrados - Municipalidad de Antofagasta</title>
+  <link rel="stylesheet" href="/consultaAnimales.css">
+</head>
+<body>
+  <div class="contenedor">
+    <div class="barra-superior">
+      <h1>Consulta de Animales Registrados (Ley 21.020)</h1>
+      <!-- Enlace hacia la vista principal de registro -->
+      <a href="/" class="enlace-volver">&larr; Ir a Registro de Animal</a>
+    </div>
+
+    <!-- Controles de sesión, filtro por RUT y tamaño de página -->
+    <div class="filtros">
+      <div class="campo" style="flex: 1; min-width: 220px;">
+        <label for="tokenInput">Token de Sesión (Núcleo):</label>
+        <input type="text" id="tokenInput" placeholder="Pegue su token Bearer o se leerá de sesión">
+      </div>
+
+      <!-- Input de RUT con formato automático (agrega guion antes del último dígito) -->
+      <div class="campo">
+        <label for="rutInput">Filtrar por RUT (Tutor o Responsable):</label>
+        <input type="text" id="rutInput" maxlength="10" placeholder="Ej: 12345678-9">
+      </div>
+
+      <!-- Cantidad de animales por página -->
+      <div class="campo">
+        <label for="limitSelect">Por página:</label>
+        <select id="limitSelect">
+          <option value="5">5</option>
+          <option value="10" selected>10</option>
+          <option value="20">20</option>
+        </select>
+      </div>
+
+      <button id="btnBuscar">Buscar</button>
+      <button id="btnLimpiar" class="btn-secundario" type="button">Limpiar</button>
+    </div>
+
+    <!-- Área para mostrar errores o avisos -->
+    <div id="cajaMensaje" class="mensaje"></div>
+
+    <!-- Tabla con los resultados de la consulta -->
+    <table>
+      <thead>
+        <tr>
+          <th>ID Animal</th>
+          <th>Nombre</th>
+          <th>Especie / Raza</th>
+          <th>Sexo</th>
+          <th>Microchip</th>
+          <th>Estado</th>
+          <th>RUT Tutor / Resp.</th>
+        </tr>
+      </thead>
+      <tbody id="tablaCuerpo">
+        <tr>
+          <td colspan="7" style="text-align:center;">Ingrese su token y presione Buscar para consultar.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Controles para cambiar de página -->
+    <div class="paginacion">
+      <span id="infoPaginacion">Página 1 de 1 (0 registros)</span>
+      <div>
+        <button id="btnAnterior" disabled>Anterior</button>
+        <button id="btnSiguiente" disabled>Siguiente</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Variables para controlar en qué página estamos y cuántas existen
+    let paginaActual = 1;
+    let totalPaginas = 1;
+
+    const tokenInput = document.getElementById('tokenInput');
+    const rutInput = document.getElementById('rutInput');
+    const limitSelect = document.getElementById('limitSelect');
+    const tablaCuerpo = document.getElementById('tablaCuerpo');
+    const cajaMensaje = document.getElementById('cajaMensaje');
+    const infoPaginacion = document.getElementById('infoPaginacion');
+    const btnAnterior = document.getElementById('btnAnterior');
+    const btnSiguiente = document.getElementById('btnSiguiente');
+
+    // Si había un token guardado en el navegador, lo precarga automáticamente
+    const tokenGuardado = localStorage.getItem('token_nucleo') || localStorage.getItem('token');
+    if (tokenGuardado) {
+      tokenInput.value = tokenGuardado;
+    }
+
+    // Agrega automáticamente el guion antes del dígito verificador mientras escribes el RUT
+    rutInput.addEventListener('input', (e) => {
+      let valor = e.target.value.replace(/[^0-9kK]/g, '').toUpperCase();
+      if (valor.length > 9) valor = valor.slice(0, 9);
+      if (valor.length > 1) {
+        e.target.value = valor.slice(0, -1) + '-' + valor.slice(-1);
+      } else {
+        e.target.value = valor;
+      }
+    });
+
+    // Muestra mensajes de error o información en pantalla
+    function mostrarMensaje(texto, tipo) {
+      cajaMensaje.textContent = texto;
+      cajaMensaje.className = 'mensaje ' + tipo;
+    }
+
+    // Limpia y oculta la caja de mensajes
+    function ocultarMensaje() {
+      cajaMensaje.className = 'mensaje';
+      cajaMensaje.textContent = '';
+    }
+
+    // Llama al endpoint GET /api/registro/animales con filtros y paginación
+    async function consultarAnimales(pagina = 1) {
+      ocultarMensaje();
+
+      const tokenRaw = tokenInput.value.trim();
+      if (!tokenRaw) {
+        mostrarMensaje('Debe ingresar un token de sesión válido para consultar.', 'error');
+        return;
+      }
+
+      // Guarda el token y arma el header Authorization con formato Bearer
+      localStorage.setItem('token_nucleo', tokenRaw);
+      const authHeader = tokenRaw.startsWith('Bearer ') ? tokenRaw : `Bearer ${tokenRaw}`;
+
+      const rut = rutInput.value.trim();
+      const limit = limitSelect.value;
+
+      // Arma los parámetros de consulta en la URL
+      const params = new URLSearchParams({
+        page: pagina,
+        limit: limit
+      });
+      if (rut) {
+        params.append('rut', rut);
+      }
+
+      try {
+        const respuesta = await fetch(`/api/registro/animales?${params.toString()}`, {
+          headers: {
+            'Authorization': authHeader
+          }
+        });
+
+        const resultado = await respuesta.json();
+
+        // Si el backend responde con error, muestra el mensaje estándar
+        if (!respuesta.ok) {
+          const msgError = resultado?.error?.mensaje || 'Error al consultar los animales';
+          mostrarMensaje(msgError, 'error');
+          tablaCuerpo.innerHTML = '<tr><td colspan="7" style="text-align:center;">Sin datos disponibles.</td></tr>';
+          return;
+        }
+
+        const animales = resultado.data || [];
+        const pag = resultado.paginacion || { total: 0, page: 1, totalPages: 1 };
+
+        paginaActual = pag.page;
+        totalPaginas = pag.totalPages;
+
+        // Actualiza el indicador de página y habilita/deshabilita botones
+        infoPaginacion.textContent = `Página ${paginaActual} de ${totalPaginas} (${pag.total} registros en total)`;
+        btnAnterior.disabled = paginaActual <= 1;
+        btnSiguiente.disabled = paginaActual >= totalPaginas;
+
+        // Si no hay animales para el filtro, avisa al usuario
+        if (animales.length === 0) {
+          mostrarMensaje('No se encontraron animales para los criterios ingresados.', 'info');
+          tablaCuerpo.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay registros para mostrar.</td></tr>';
+          return;
+        }
+
+        // Pinta cada animal como una fila en la tabla
+        tablaCuerpo.innerHTML = animales.map(animal => {
+          const razaTexto = animal.raza || animal.razaObservada || 'Sin especificar';
+          const rutMostrar = animal.comunitario
+            ? `${animal.responsableRut || '-'} (Comunitario)`
+            : (animal.tutorRut || '-');
+
+          return `
+            <tr>
+              <td><strong>${animal.animalId}</strong></td>
+              <td>${animal.nombre}</td>
+              <td>${animal.especie} - ${razaTexto}</td>
+              <td>${animal.sexo}</td>
+              <td>${animal.microchip || 'Sin chip'}</td>
+              <td>${animal.estado}</td>
+              <td>${rutMostrar}</td>
+            </tr>
+          `;
+        }).join('');
+
+      } catch (err) {
+        mostrarMensaje('No se pudo conectar con el servidor.', 'error');
+      }
+    }
+
+    // Eventos para buscar, limpiar filtro y navegar entre páginas
+    document.getElementById('btnBuscar').addEventListener('click', () => consultarAnimales(1));
+
+    document.getElementById('btnLimpiar').addEventListener('click', () => {
+      rutInput.value = '';
+      consultarAnimales(1);
+    });
+
+    btnAnterior.addEventListener('click', () => {
+      if (paginaActual > 1) consultarAnimales(paginaActual - 1);
+    });
+
+    btnSiguiente.addEventListener('click', () => {
+      if (paginaActual < totalPaginas) consultarAnimales(paginaActual + 1);
+    });
+  </script>
+</body>
+</html>
