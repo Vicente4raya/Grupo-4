@@ -230,6 +230,90 @@ app.get('/api/estado', (req, res) => {
   });
 });
 
+// Consulta paginada de animales (permite filtrar por RUT de tutor o responsable)
+app.get('/api/registro/animales', async (req, res) => {
+  try {
+    // 1. Revisar que venga el token de sesión en el header Authorization
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({
+        error: { codigo: 'NO_AUTORIZADO', mensaje: 'Falta el token de sesión' }
+      });
+    }
+
+    // 2. Validar el token directamente contra el Núcleo
+    let usuarioNucleo;
+    try {
+      const respNucleo = await fetch('https://nucleo-tr.onrender.com/api/nucleo/sesiones/actual', {
+        headers: { Authorization: authHeader }
+      });
+
+      // Token vencido o no válido
+      if (respNucleo.status === 401) {
+        return res.status(401).json({
+          error: { codigo: 'TOKEN_INVALIDO', mensaje: 'Token inválido o expirado' }
+        });
+      }
+      // Error distinto al 401 desde el Núcleo
+      if (!respNucleo.ok) {
+        return res.status(503).json({
+          error: { codigo: 'NUCLEO_NO_DISPONIBLE', mensaje: 'Error al validar sesión con el núcleo' }
+        });
+      }
+      usuarioNucleo = await respNucleo.json();
+    } catch (err) {
+      // El servidor del Núcleo no respondió o hubo problema de red
+      return res.status(503).json({
+        error: { codigo: 'NUCLEO_NO_DISPONIBLE', mensaje: 'El núcleo no responde' }
+      });
+    }
+
+    // 3. Leer parámetros de búsqueda (rut) y paginación (page y limit)
+    const { rut } = req.query;
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1); // Mínimo página 1
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 100); // Entre 1 y 100 por página
+    const skip = (page - 1) * limit; // Cuántos registros saltar según la página
+
+    // 4. Armar el filtro de MongoDB si viene un RUT
+    const filtro = {};
+    if (rut) {
+      const rutLimpio = String(rut).trim();
+      filtro.$or = [
+        { tutorRut: rutLimpio },
+        { responsableRut: rutLimpio }
+      ];
+    }
+
+    // 5. Contar total de resultados y traer solo la página pedida (más nuevos primero)
+    const [total, animales] = await Promise.all([
+      Mascota.countDocuments(filtro),
+      Mascota.find(filtro)
+        .sort({ fechaRegistro: -1 })
+        .skip(skip)
+        .limit(limit)
+    ]);
+
+    const totalPages = Math.max(Math.ceil(total / limit), 1);
+
+    // 6. Responder con el listado y los datos de paginación
+    return res.status(200).json({
+      data: animales,
+      paginacion: {
+        total,
+        page,
+        limit,
+        totalPages
+      }
+    });
+  } catch (error) {
+    // Error inesperado al consultar la base de datos
+    return res.status(500).json({
+      error: { codigo: 'ERROR_CONSULTA', mensaje: 'No se pudo obtener el listado de animales' }
+    });
+  }
+});
+
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en el puerto ${PORT}`);
