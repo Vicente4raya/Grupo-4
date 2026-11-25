@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Módulo 1 - Registro de Mascotas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .contenedor {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+    }
+    h1, h2 { color: #2c3e50; margin-top: 0; }
+    label { display: block; margin-top: 12px; font-weight: bold; font-size: 14px; }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    .checkbox-grupo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .checkbox-grupo input { width: auto; margin: 0; }
+    .checkbox-grupo label { margin: 0; font-weight: normal; }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 20px;
+      background-color: #2ecc71;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover { background-color: #27ae60; }
+    .btn-secundario { background-color: #3498db; }
+    .btn-secundario:hover { background-color: #2980b9; }
+    .mensaje {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 5px;
+      display: none;
+      font-size: 14px;
+    }
+    .exito { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .oculto { display: none; }
+    .sesion-info {
+      background: #eaf2f8;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 13px;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="contenedor">
+    <h1>Registro Municipal de Mascotas</h1>
+
+    <div id="seccion-login">
+      <h2>Iniciar Sesión</h2>
+      <label for="login-rut">RUT (ej: 11111111-1)</label>
+      <input type="text" id="login-rut" placeholder="Ingresa tu RUT">
+
+      <label for="login-clave">Contraseña</label>
+      <input type="password" id="login-clave" value="tenencia2026">
+
+      <button class="btn-secundario" onclick="iniciarSesion()">Ingresar</button>
+      <div id="msg-login" class="mensaje"></div>
+    </div>
+
+    <div id="seccion-formulario" class="oculto">
+      <div class="sesion-info" id="info-usuario"></div>
+
+      <h2>Registrar Nueva Mascota</h2>
+      <form id="form-mascota" onsubmit="registrarMascota(event)">
+        <label for="nombre">Nombre de la mascota *</label>
+        <input type="text" id="nombre" required placeholder="Ej: Cholito">
+
+        <label for="especie">Especie *</label>
+        <select id="especie" required>
+          <option value="ESP-PERRO" data-nombre="perro">Perro</option>
+          <option value="ESP-GATO" data-nombre="gato">Gato</option>
+        </select>
+
+        <div class="checkbox-grupo">
+          <input type="checkbox" id="es-mestizo" onchange="alternarMestizo()">
+          <label for="es-mestizo">¿Es mestizo?</label>
+        </div>
+
+        <div id="campo-raza">
+          <label for="raza">Raza *</label>
+          <select id="raza">
+            <option value="RZ-001" data-nombre="Labrador Retriever">Labrador Retriever</option>
+            <option value="RZ-002" data-nombre="Pastor Alemán">Pastor Alemán</option>
+            <option value="RZ-003" data-nombre="Poodle">Poodle</option>
+            <option value="RZ-004" data-nombre="Siamés">Siamés</option>
+          </select>
+        </div>
+
+        <div id="campo-raza-observada" class="oculto">
+          <label for="raza-observada">Raza observada (texto libre) *</label>
+          <input type="text" id="raza-observada" placeholder="Ej: Mestizo pelaje café mediano">
+        </div>
+
+        <label for="sexo">Sexo *</label>
+        <select id="sexo" required>
+          <option value="macho">Macho</option>
+          <option value="hembra">Hembra</option>
+        </select>
+
+        <label for="edad">Edad aproximada (años) *</label>
+        <input type="number" id="edad" min="0" required placeholder="Ej: 4">
+
+        <label for="microchip">Microchip (opcional, 15 dígitos)</label>
+        <input type="text" id="microchip" placeholder="Ej: 985112003456789">
+
+        <div class="checkbox-grupo">
+          <input type="checkbox" id="es-comunitario" onchange="alternarComunitario()">
+          <label for="es-comunitario">¿Es animal comunitario?</label>
+        </div>
+
+        <div id="campo-tutor">
+          <label for="tutor-rut">RUT del Tutor</label>
+          <input type="text" id="tutor-rut" placeholder="Ej: 11111111-1">
+        </div>
+
+        <div id="campo-responsable" class="oculto">
+          <label for="responsable-rut">RUT del Responsable Comunitario</label>
+          <input type="text" id="responsable-rut" placeholder="Ej: 22222222-2">
+        </div>
+
+        <button type="submit">Guardar Mascota</button>
+      </form>
+
+      <div id="msg-registro" class="mensaje"></div>
+    </div>
+  </div>
+
+  <script>
+    const URL_NUCLEO = 'https://nucleo-tr.onrender.com';
+    let tokenSesion = null;
+    let usuarioActual = null;
+
+    async function iniciarSesion() {
+      const rut = document.getElementById('login-rut').value.trim();
+      const clave = document.getElementById('login-clave').value;
+      const msg = document.getElementById('msg-login');
+
+      if (!rut || !clave) {
+        mostrarMensaje(msg, 'Ingresa tu RUT y contraseña', 'error');
+        return;
+      }
+
+      try {
+        const resp = await fetch(`${URL_NUCLEO}/api/nucleo/sesiones`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rut, clave })
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok) {
+          mostrarMensaje(msg, data.error?.mensaje || 'Credenciales incorrectas', 'error');
+          return;
+        }
+
+        tokenSesion = data.token;
+        usuarioActual = data.usuario || { rut, perfil: data.perfil || 'usuario' };
+
+        document.getElementById('seccion-login').classList.add('oculto');
+        document.getElementById('seccion-formulario').classList.remove('oculto');
+        document.getElementById('info-usuario').innerText =
+          `Sesión activa: RUT ${usuarioActual.rut} (Perfil: ${usuarioActual.perfil})`;
+
+        document.getElementById('tutor-rut').value = usuarioActual.rut;
+        document.getElementById('responsable-rut').value = usuarioActual.rut;
+
+      } catch (err) {
+        mostrarMensaje(msg, 'No se pudo conectar con el núcleo.', 'error');
+      }
+    }
+
+    function alternarMestizo() {
+      const esMestizo = document.getElementById('es-mestizo').checked;
+      document.getElementById('campo-raza').classList.toggle('oculto', esMestizo);
+      document.getElementById('campo-raza-observada').classList.toggle('oculto', !esMestizo);
+    }
+
+    function alternarComunitario() {
+      const esComunitario = document.getElementById('es-comunitario').checked;
+      document.getElementById('campo-tutor').classList.toggle('oculto', esComunitario);
+      document.getElementById('campo-responsable').classList.toggle('oculto', !esComunitario);
+    }
+
+    async function registrarMascota(event) {
+      event.preventDefault();
+      const msg = document.getElementById('msg-registro');
+
+      const selectEspecie = document.getElementById('especie');
+      const selectRaza = document.getElementById('raza');
+      const esMestizo = document.getElementById('es-mestizo').checked;
+      const esComunitario = document.getElementById('es-comunitario').checked;
+      const microchipValor = document.getElementById('microchip').value.trim();
+
+      const cuerpo = {
+        nombre: document.getElementById('nombre').value.trim(),
+        especieId: selectEspecie.value,
+        especie: selectEspecie.options[selectEspecie.selectedIndex].dataset.nombre,
+        razaId: esMestizo ? null : selectRaza.value,
+        raza: esMestizo ? null : selectRaza.options[selectRaza.selectedIndex].dataset.nombre,
+        razaObservada: esMestizo ? document.getElementById('raza-observada').value.trim() : null,
+        sexo: document.getElementById('sexo').value,
+        edadAproximada: Number(document.getElementById('edad').value),
+        microchip: microchipValor === '' ? null : microchipValor,
+        comunitario: esComunitario,
+        tutorRut: esComunitario ? null : document.getElementById('tutor-rut').value.trim(),
+        responsableRut: esComunitario ? document.getElementById('responsable-rut').value.trim() : null
+      };
+
+      try {
+        const resp = await fetch('/api/registro/animales', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tokenSesion}`
+          },
+          body: JSON.stringify(cuerpo)
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok) {
+          const codigo = data.error?.codigo || 'ERROR';
+          const detalle = data.error?.mensaje || 'No se pudo registrar';
+          mostrarMensaje(msg, `Error (${codigo}): ${detalle}`, 'error');
+          return;
+        }
+
+        mostrarMensaje(
+          msg,
+          `¡Mascota registrada con éxito! ID asignado: ${data.animalId} (Estado: ${data.estado})`,
+          'exito'
+        );
+        document.getElementById('form-mascota').reset();
+        alternarMestizo();
+        alternarComunitario();
+
+      } catch (err) {
+        mostrarMensaje(msg, 'Error de conexión con el servidor.', 'error');
+      }
+    }
+
+    function mostrarMensaje(elemento, texto, tipo) {
+      elemento.innerText = texto;
+      elemento.className = `mensaje ${tipo}`;
+      elemento.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
