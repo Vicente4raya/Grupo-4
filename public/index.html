@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Módulo 1 · Registro de animales</title>
+  <link rel="stylesheet" href="/estilos.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <strong>Módulo 1 · Registro de animales</strong>
+      <div class="session-controls">
+        <span id="sessionLabel" hidden></span>
+        <button id="logoutButton" class="button secondary" type="button" hidden>Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1>Gestión de mascotas</h1>
+    <p class="intro">Inicia sesión para transferir la tutoría o revisar las opciones de estado vital y microchip.</p>
+
+    <section id="loginSection" class="panel" aria-labelledby="loginTitle">
+      <h2 id="loginTitle">1. Iniciar sesión</h2>
+      <form id="loginForm">
+        <div class="field">
+          <label for="loginRut">RUT</label>
+          <input id="loginRut" name="rut" type="text" required autocomplete="username" placeholder="11111111-1" pattern="\d{7,8}-[\dkK]">
+        </div>
+        <div class="field">
+          <label for="loginPassword">Clave</label>
+          <input id="loginPassword" name="clave" type="password" required autocomplete="current-password">
+        </div>
+        <button class="button" type="submit">Ingresar</button>
+        <p id="loginMessage" class="message" role="status" aria-live="polite" hidden></p>
+      </form>
+    </section>
+
+    <div id="signedInSections" hidden>
+      <section class="panel" aria-labelledby="transferTitle">
+        <h2 id="transferTitle">2. Transferir tutor</h2>
+        <form id="transferForm">
+          <div class="field">
+            <label for="transferAnimalId">ID animal</label>
+            <input id="transferAnimalId" name="animalId" type="text" required placeholder="A-000001" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="newTutorRut">RUT nuevo tutor</label>
+            <input id="newTutorRut" name="tutorRut" type="text" placeholder="11111111-1" pattern="\d{7,8}-[\dkK]" autocomplete="off">
+          </div>
+          <label class="check-row" for="noTutor">
+            <input id="noTutor" name="noTutor" type="checkbox">
+            Dejar sin tutor
+          </label>
+          <button class="button" type="submit">Transferir</button>
+        </form>
+      </section>
+
+      <section class="panel" aria-labelledby="statusTitle">
+        <h2 id="statusTitle">3. Microchip y estado</h2>
+        <form id="statusForm">
+          <div class="field">
+            <label for="statusAnimalId">ID animal</label>
+            <input id="statusAnimalId" name="animalId" type="text" placeholder="A-000001" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="microchip">Microchip</label>
+            <input id="microchip" name="microchip" type="text" inputmode="numeric" maxlength="15" pattern="\d{15}" placeholder="15 dígitos">
+            <small>Debe contener exactamente 15 dígitos numéricos.</small>
+          </div>
+          <div class="field">
+            <label for="vitalStatus">Estado vital</label>
+            <select id="vitalStatus" name="estado">
+              <option value="registrado">Registrado</option>
+              <option value="con_microchip">Con microchip</option>
+              <option value="inscrito">Inscrito</option>
+              <option value="fallecido">Fallecido</option>
+            </select>
+          </div>
+          <button class="button" type="submit" disabled>Guardar</button>
+          <p class="notice">Pendiente: el backend aún no tiene una ruta para guardar cambios de microchip y estado.</p>
+        </form>
+      </section>
+    </div>
+
+    <section id="resultSection" class="panel result-panel" aria-labelledby="resultTitle" aria-live="polite" hidden>
+      <h2>Resultado</h2>
+      <p id="resultTitle" class="result-title"></p>
+      <p id="resultMessage"></p>
+      <pre id="resultData" hidden></pre>
+    </section>
+  </main>
+</body>
+</html>

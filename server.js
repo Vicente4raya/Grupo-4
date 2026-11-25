@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const { verificarSesion, autorizarPerfiles, consultarUsuarioNucleo } = require('./auth');
 
 const app = express();
 
@@ -102,6 +103,102 @@ const MascotaSchema = new mongoose.Schema({
 });
 
 const Mascota = mongoose.model('Mascota', MascotaSchema);
+
+app.patch(
+  '/api/registro/animales/:animalId/tutor',
+  verificarSesion,
+  autorizarPerfiles('funcionario', 'admin'),
+  async (req, res) => {
+    const body = req.body || {};
+    if (!Object.prototype.hasOwnProperty.call(body, 'tutorRut')) {
+      return res.status(400).json({
+        error: { codigo: 'DATOS_FALTANTES', mensaje: 'Debe enviar tutorRut o null' }
+      });
+    }
+
+    if (body.tutorRut !== null && typeof body.tutorRut !== 'string') {
+      return res.status(400).json({
+        error: { codigo: 'RUT_INVALIDO', mensaje: 'tutorRut debe ser un RUT como texto o null' }
+      });
+    }
+
+    const tutorRut = body.tutorRut === null ? null : body.tutorRut.trim();
+    if (tutorRut !== null && !/^\d{7,8}-[\dkK]$/.test(tutorRut)) {
+      return res.status(400).json({
+        error: { codigo: 'RUT_INVALIDO', mensaje: 'El formato del RUT del tutor es inválido' }
+      });
+    }
+
+    try {
+      const animal = await Mascota.findOne({ animalId: req.params.animalId });
+      if (!animal) {
+        return res.status(404).json({
+          error: { codigo: 'ANIMAL_NO_ENCONTRADO', mensaje: 'No existe el animal solicitado' }
+        });
+      }
+
+      if (animal.estado === 'fallecido') {
+        return res.status(409).json({
+          error: { codigo: 'ANIMAL_FALLECIDO', mensaje: 'No se puede cambiar el tutor de un animal fallecido' }
+        });
+      }
+
+      if (tutorRut !== null) {
+        const consulta = await consultarUsuarioNucleo(tutorRut, req.get('authorization'));
+
+        if (consulta.status === 404) {
+          return res.status(404).json({
+            error: { codigo: 'USUARIO_NO_ENCONTRADO', mensaje: 'El tutor no existe en el Núcleo' }
+          });
+        }
+        if (consulta.status === 401) {
+          return res.status(401).json({
+            error: { codigo: 'TOKEN_INVALIDO', mensaje: 'Token inválido o expirado' }
+          });
+        }
+        if (consulta.status === 403) {
+          return res.status(403).json({
+            error: { codigo: 'PERFIL_NO_AUTORIZADO', mensaje: 'El perfil no puede consultar a esa persona' }
+          });
+        }
+        if (consulta.status !== 200 || !consulta.datos) {
+          return res.status(503).json({
+            error: { codigo: 'NUCLEO_NO_DISPONIBLE', mensaje: 'No se pudieron verificar las reglas con el Núcleo' }
+          });
+        }
+        if (consulta.datos.prohibicionTenencia === true) {
+          return res.status(409).json({
+            error: { codigo: 'PROHIBICION_TENENCIA', mensaje: 'El nuevo tutor tiene prohibición de tenencia' }
+          });
+        }
+      }
+
+      const animalActualizado = await Mascota.findOneAndUpdate(
+        { animalId: req.params.animalId, estado: { $ne: 'fallecido' } },
+        { $set: { tutorRut } },
+        { new: true, runValidators: true }
+      );
+
+      if (!animalActualizado) {
+        const animalActual = await Mascota.findOne({ animalId: req.params.animalId }).select('estado');
+        if (!animalActual) {
+          return res.status(404).json({
+            error: { codigo: 'ANIMAL_NO_ENCONTRADO', mensaje: 'No existe el animal solicitado' }
+          });
+        }
+        return res.status(409).json({
+          error: { codigo: 'ANIMAL_FALLECIDO', mensaje: 'No se puede cambiar el tutor de un animal fallecido' }
+        });
+      }
+
+      return res.status(200).json(animalActualizado);
+    } catch (error) {
+      return res.status(500).json({
+        error: { codigo: 'ERROR_INTERNO', mensaje: 'No se pudo actualizar el tutor' }
+      });
+    }
+  }
+);
 
 app.post('/api/registro/animales', async (req, res) => {
   try {

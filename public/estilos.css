@@ -1,0 +1,33 @@
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#20252a;background:#f4f6f8;font-synthesis:none;text-rendering:optimizeLegibility}
+*{box-sizing:border-box}
+body{margin:0;line-height:1.5}
+.site-header{background:#fff;border-bottom:1px solid #d9dee3}
+.header-inner{max-width:900px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.session-controls{display:flex;align-items:center;gap:12px;color:#45515c;font-size:14px}
+.container{max-width:900px;margin:32px auto;padding:0 20px 48px}
+h1{margin:0 0 6px;font-size:30px;line-height:1.2}
+h2{margin:0 0 18px;font-size:20px}
+.intro{margin:0 0 24px;color:#5d6872}
+.panel{background:#fff;border:1px solid #d9dee3;border-radius:8px;padding:22px;margin:0 0 18px}
+.field{margin:0 0 16px}
+label{display:block;font-weight:600;margin:0 0 6px}
+input,select{font:inherit;color:inherit;background:#fff;border:1px solid #9aa5ae;border-radius:5px;padding:9px 10px;width:100%;max-width:460px}
+input:focus,select:focus{outline:2px solid #6a9ed1;outline-offset:1px}
+input[type=checkbox]{width:auto;max-width:none;margin:0 8px 0 0}
+.check-row{display:flex;align-items:center;font-weight:400;margin:0 0 16px}
+small{display:block;color:#5d6872;margin-top:4px}
+.button{font:inherit;font-weight:600;color:#fff;background:#245f91;border:1px solid #245f91;border-radius:5px;padding:9px 15px;cursor:pointer}
+.button:hover:not(:disabled){background:#1d4d76}
+.button:disabled{background:#8d989f;border-color:#8d989f;cursor:not-allowed}
+.button.secondary{background:#fff;color:#35424c;border-color:#9aa5ae}
+.button.secondary:hover:not(:disabled){background:#f2f4f6}
+.message,.notice{margin:14px 0 0;padding:10px 12px;border-radius:5px;background:#f1f4f6;color:#34414b}
+.message.error{background:#fff0ef;color:#8d251d}
+.notice{border-left:3px solid #8b6d25}
+.result-panel{border-left:4px solid #557b9d}
+.result-title{font-weight:700;margin-bottom:4px}
+.result-title.success{color:#176b3a}
+.result-title.error{color:#a12b22}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f4f6f8;border:1px solid #d9dee3;border-radius:5px;padding:12px;font-size:13px}
+[hidden]{display:none!important}
+@media(max-width:600px){.container{margin:22px auto;padding:0 14px 32px}.header-inner{padding:12px 14px;align-items:flex-start}h1{font-size:25px}.panel{padding:17px}}
