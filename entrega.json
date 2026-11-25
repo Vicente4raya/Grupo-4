@@ -1,50 +1,51 @@
 {
-  "seccion": "IEI-C1",
+  "seccion": "IEI-N4",
   "modulo": 1,
-  "grupo": "Grupo-4",
+  "grupo": "G04",
   "prototipo": "https://grupo-4-l97o.onrender.com",
   "repositorio": "https://github.com/Vicente4raya/Grupo-4",
   "taiga": "https://tree.taiga.io/project/jusepein-ti3043d-iei-n4-p2-c1",
   "integrantes": [
     {
-      "nombre": "Axel",
-      "github": "axel-gh",
-      "taiga": "axel-taiga",
+      "nombre": "Vicente Araya",
+      "github": "Vicente4raya",
+      "taiga": "Vicente4raya",
       "rol": "PO"
     },
     {
-      "nombre": "Mathias",
-      "github": "ArmandoPuertas777",
-      "taiga": "mathias-taiga",
+      "nombre": "Axel Carrasco",
+      "github": "AxelCarrasco",
+      "taiga": "AxelCarrasco",
       "rol": "SM"
-    },
-    {
-      "nombre": "Vicente",
-      "github": "Vicente4raya",
-      "taiga": "vicente-taiga",
-      "rol": "Calidad"
-    },
-    {
-      "nombre": "Jusepe",
-      "github": "jusepe-gh",
-      "taiga": "jusepein",
-      "rol": "Desarrollador"
     }
   ],
   "historias": [
     {
-      "id": "HU-01",
+      "id": "HU-58",
       "titulo": "Registro individual de mascotas",
-      "responsable": "Vicente4raya",
+      "responsable": "AxelCarrasco",
       "verificacion": {
         "metodo": "POST",
         "ruta": "/api/registro/animales",
         "perfil": "funcionario",
         "cuerpo": {
           "nombre": "Mascota Test",
-          "especie": "Perro"
+          "especie": "Perro",
+          "raza": "Mestizo",
+          "rutTutor": "12345678-9"
         },
         "esperado": 201
+      }
+    },
+    {
+      "id": "HU-60",
+      "titulo": "Busqueda y consulta por microchip",
+      "responsable": "Vicente4raya",
+      "verificacion": {
+        "metodo": "GET",
+        "ruta": "/api/registro/animales",
+        "perfil": "funcionario",
+        "esperado": 200
       }
     }
   ]
